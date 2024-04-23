@@ -8,5 +8,8 @@ Personal implementations of multiple hashing algorithms
 ## Blake-3
 
 ## Keccak
+Run Main.java
+When prompted, enter a message
+Wait a few seconds for the hash to print
 
 ## Skein
