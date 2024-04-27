@@ -10,7 +10,7 @@ public class Main {
         String message = scanner.next().trim();
         scanner.close();
 
-        KeccakSponge spongeFunction = new KeccakSponge(576, 1024, "", 512);
+        KeccakSponge spongeFunction = new KeccakSponge(576, 1024, "", 256);
         byte[] messageBytes = message.getBytes();
         byte[] hash = spongeFunction.apply(5, messageBytes);
         for (int i = 0; i < 900000; ++i) {

@@ -1,0 +1,18 @@
+package Skein;
+
+public class KeyParams implements CipherParams {
+    private byte[] key;
+
+    public KeyParams(byte[] key) {
+        this(key, 0, key.length);
+    }
+
+    public KeyParams(byte[] key, int keyOff, int keyLen) {
+        this.key = new byte[keyLen];
+        System.arraycopy(key, keyOff, this.key, 0, keyLen);
+    }
+
+    public byte[] getKey() {
+        return key;
+    }
+}
