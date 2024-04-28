@@ -9,6 +9,7 @@ Implementations are in Java and Python
 ## Blake-3
 
 ## Keccak
+A Java implementation of Keccak-800 <br>
 Usage:
 1. Run Main.java
 2. When prompted, enter a message
