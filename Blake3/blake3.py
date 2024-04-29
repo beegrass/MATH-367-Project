@@ -30,6 +30,18 @@ MSG_PERMUTATION = [2, 6, 3, 10, 7, 0, 4, 13, 1, 11, 12, 5, 9, 14, 15, 8]
 
 # The mixing function, G, which mixes either a column or a diagonal.
 def g(state: list[int], a: int, b: int, c: int, d: int, mx: int, my: int) -> None:
+    """
+    The mixing function, G, which mixes either a column or a diagonal.
+
+    Args:
+        state (list[int]): the internal state v
+        a (int): the location of a 32-bit word from the internal state
+        b (int): the location of a 32-bit word from the internal state
+        c (int): the location of a 32-bit word from the internal state
+        d (int): the location of a 32-bit word from the internal state
+        mx (int): sigma_r[2i]
+        my (int): sigma_r[2i+1]
+    """
     state[a] = add32(state[a], add32(state[b], mx))
     state[d] = rightrotate32(state[d] ^ state[a], 16)
     state[c] = add32(state[c], state[d])
@@ -63,14 +75,18 @@ def compress(
     block_len: int,
     flags: int,
 ) -> list[int]:
-    """_summary_
+    """
+    Works with 32-bit words, used to derive a chaining value from each chunk
+    and parent node in the tree. It initialized it's 16-word internal
+    state v. Applies a 7-round keyed permutation to the state v, keyed by
+    the message m.
 
     Args:
-        chaining_value (list[int]): _description_
-        block_words (list[int]): _description_
-        counter (int): _description_
-        block_len (int): _description_
-        flags (int): _description_
+        chaining_value (list[int]): 256-bit input chaining value
+        block_words (list[int]): the 512-bit message block
+        counter (int): a 64-bit counterwith t[0] the lower order word and t[1] the higher order words
+        block_len (int): the number of input bytes in the block, b
+        flags (int): a set of domain separation bit flags, d
 
     Returns:
         list[int]: _description_
@@ -227,7 +243,6 @@ def parent_output(
         key_words, left_child_cv + right_child_cv, 0, BLOCK_LEN, PARENT | flags
     )
 
-
 def parent_cv(
     left_child_cv: list[int],
     right_child_cv: list[int],
@@ -281,23 +296,32 @@ class Hasher:
 
     # Section 5.1.2 of the BLAKE3 spec explains this algorithm in more detail.
     def add_chunk_chaining_value(self, new_cv: list[int], total_chunks: int) -> None:
-        # This chunk might complete some subtrees. For each completed subtree,
-        # its left child will be the current top entry in the CV stack, and
-        # its right child will be the current value of `new_cv`. Pop each left
-        # child off the stack, merge it with `new_cv`, and overwrite `new_cv`
-        # with the result. After all these merges, push the final value of
-        # `new_cv` onto the stack. The number of completed subtrees is given
-        # by the number of trailing 0-bits in the new total number of chunks.
+        """
+        Blake-3 Section 5.1.2: Chaining Value Stack .
+        For each completed subtree, this chunk's left child will be the current top
+        entry in the CV stack and its right will be the current value of new_cv.
+        Each left child is popped and merged with new_cv then new_cv is overwritten.
+        After all the merges, new_cv is pushed to the stack and the number of completed
+        subtrees is given by the number of trailing 0-bits in the new total number of chunks       
+
+        Args:
+            new_cv (list[int]): new chunk to add to tree
+            total_chunks (int): number of chunks in tree
+        """
         while total_chunks & 1 == 0:
             new_cv = parent_cv(self.cv_stack.pop(), new_cv, self.key_words, self.flags)
             total_chunks >>= 1
         self.cv_stack.append(new_cv)
 
-    # Add input to the hash state. This can be called any number of times.
     def update(self, input_bytes: bytes) -> None:
+        """
+        Adds input to the hash state. 
+        If current chunk is complete, finalize it and reset the chunk state. 
+
+        Args:
+            input_bytes (bytes): input to hash
+        """
         while input_bytes:
-            # If the current chunk is complete, finalize it and reset the
-            # chunk state. More input is coming, so this chunk is not ROOT.
             if self.chunk_state.len() == CHUNK_LEN:
                 chunk_cv = self.chunk_state.output().chaining_value()
                 total_chunks = self.chunk_state.chunk_counter + 1
@@ -310,11 +334,18 @@ class Hasher:
             self.chunk_state.update(input_bytes[:take])
             input_bytes = input_bytes[take:]
 
-    # Finalize the hash and write any number of output bytes.
     def finalize(self, length: int = OUT_LEN) -> bytes:
-        # Starting with the Output from the current chunk, compute all the
-        # parent chaining values along the right edge of the tree, until we
-        # have the root Output.
+        """
+        Finalize the hash and write number of output bytes. Starts with
+        output from current chunk and computes all parent cv's along right
+        edge of the tree until the root output.
+
+        Args:
+            length (int, optional): length of output. Defaults to OUT_LEN.
+
+        Returns:
+            bytes: _description_
+        """
         output = self.chunk_state.output()
         parent_nodes_remaining = len(self.cv_stack)
         while parent_nodes_remaining > 0:

@@ -8,7 +8,8 @@ MASK48BITS  = 0xFFFFFFFFFFFF
 MASK64BITS  = 0xFFFFFFFFFFFFFFFF
 
 class BLAKE2(object):
-    """ Base class for BLAKE2b """
+    
+    # Blake2 Table 5: Permutations of 0, . . ., 15 used by Blake2 functions
     sigma = [
         [  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15 ],
         [ 14,10, 4, 8, 9,15,13, 6, 1,12, 0, 2,11, 7, 5, 3 ],
@@ -46,10 +47,6 @@ class BLAKE2(object):
         P.F.node_offset_hi   = self.node_offset >> 32
         P.F.node_depth       = self.node_depth
         P.F.inner_size       = self.inner_size
-        # P.F.reserved is not defined in BLAKE2s so we cannot init it 
-        # to zeros for both BLAKE2s and BLAKE2b here.  Fortunately ctypes 
-        # initializes to zeros so we don't have to.  :-))
-        #        P.F.reserved         = chr(0) * 14
         P.F.salt   = (self.salt + 
                 (chr(0).encode())*(self.SALTBYTES-len(self.salt)))
         P.F.person = (self.person + 
@@ -74,10 +71,14 @@ class BLAKE2(object):
             self.update(self.data)
 
     def _compress(self, block):
-        
-        # Dereference these for [very small] speed improvement.
-        # Perhaps more than anything, this makes the code 
-        # easier to read.
+        """
+        Performs the compression step of Blake2b on the given block.
+        Applies the G function to modify the interal state in 12 rounds.
+        As according to Blake2 section A.1 BLAKE2b and section 2.4 Fewer Constants 
+
+        Args:
+            block (bytes): The input block to be compressed.
+        """
         MASKBITS  = self.MASKBITS
         WORDBITS  = self.WORDBITS
         WORDBYTES = self.WORDBYTES
@@ -95,7 +96,9 @@ class BLAKE2(object):
         # convert block (bytes) into 16 LE words
         m = struct.unpack_from('<16%s' % self.WORDFMT, bytes(block))
         
+        # First initializes 16-word internal state
         v = [0]*16
+        
         v[ 0: 8] = self.h
         v[ 8:12] = IV[:4]
         v[12] = self.t[0] ^ IV[4]
@@ -103,11 +106,20 @@ class BLAKE2(object):
         v[14] = self.f[0] ^ IV[6]
         v[15] = self.f[1] ^ IV[7]
         
-        # Within the confines of the Python language, this is a 
-        # highly optimized version of G().  It differs some from 
-        # the formal specification and reference implementation.
+        # highly optimized version of G(). 
+        # Differs some from formal specification and reference implementation.
         def G(a, b, c, d):
-            # dereference v[] for another small speed improvement
+            """
+            Blake2b's G function, performs four 64-bit word rotations of respectively
+            32, 24, 16, and 63 bits.
+            As according to Blake 2 section 2.4 Fewer Constants
+
+            Args:
+                a (int): the location of a 64-bit word from the internal state
+                b (int): the location of a 64-bit word from the internal state
+                c (int): the location of a 64-bit word from the internal state
+                d (int): the location of a 64-bit word from the internal state
+            """
             va = v[a]
             vb = v[b]
             vc = v[c]
@@ -124,18 +136,13 @@ class BLAKE2(object):
             vc = (vc + vd)                      & MASKBITS
             w = vb ^ vc
             vb = (w >> ROT4) | (w << (WB_ROT4)) & MASKBITS
-            # re-reference v[]
             v[a] = va
             v[b] = vb
             v[c] = vc
             v[d] = vd
 
-        # time to ChaCha
+        # Each round calls G function multiple times. 12 Rounds
         for r in range(self.ROUNDS):
-            # resolve as much as possible outside G() and 
-            # don't pass as argument, let scope do its job.  
-            # Result is a 50% speed increase, but sadly, 
-            # "slow" divided by 1.5 is still "slow".  :-/
             sr = sigma[r]
             msri2  = m[sr[0]]
             msri21 = m[sr[1]]
@@ -165,6 +172,16 @@ class BLAKE2(object):
         self.h = [self.h[i] ^ v[i] ^ v[i+8] for i in range(8)]
     
     def update(self, data):
+        """
+        Update the internal state of the Blake2b hash object with the provided data.
+        Iterates over the input data, processing it in blocks of size BLOCKBYTES.
+        The internal state is updated accordingly until all data has been processed.
+        If the total length of data is not an exact multiple of BLOCKBYTES, the remaining
+        bytes are buffered until a full block can be processed.
+
+        Args:
+            data (bytes): The input data to be hashed.
+        """
         
         assert self.finalized == False
         
@@ -184,7 +201,14 @@ class BLAKE2(object):
                 break
     
     def final(self):
-        # is there any residue remaining to be processed?
+        """
+        Finalize the Blake2b hash computation and return the resulting digest.
+        Should be called after data has been porcessed in the update method.
+        
+        Returns:
+            bytes: The digest (hash value) of the input data.
+        """
+        # check if any residue remaining to be processed
         if not self.finalized and len(self.buf):
             self._increment_counter(len(self.buf))
             self._set_lastblock()
@@ -192,7 +216,7 @@ class BLAKE2(object):
             self.buf += (chr(0).encode())*(self.BLOCKBYTES - len(self.buf))
             # final compress
             self._compress(self.buf)
-            self.buf = b''      # nothing more (no residue)
+            self.buf = b''
             # convert 8 LE words into digest (bytestring)
         self.digest_ = struct.pack('<8%s' % self.WORDFMT, *tuple(self.h))
         self.finalized = True
@@ -202,11 +226,6 @@ class BLAKE2(object):
     
     def hexdigest(self):
         return binascii.hexlify(self.final()).decode()
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # f0 = 0 if NOT last block, 0xffffffff... if last block
-    # f1 = 0 if sequential mode or (tree mode and NOT last 
-    #      node), 0xffffffff... if tree mode AND last node
     
     def _set_lastblock(self):
         if self.last_node:
@@ -237,6 +256,7 @@ class BLAKE2b(BLAKE2):
     SALTBYTES     = 16  # see also hardcoded value in ParamFields64
     PERSONALBYTES = 16  # see also hardcoded value in ParamFields64
     
+    # 64-bit words IV for Blake2b
     IV = [
         0x6a09e667f3bcc908, 0xbb67ae8584caa73b,
         0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1,
@@ -244,6 +264,7 @@ class BLAKE2b(BLAKE2):
         0x1f83d9abfb41bd6b, 0x5be0cd19137e2179
     ]
     
+    # Rotation constants
     ROT1 = 32
     ROT2 = 24
     ROT3 = 16
@@ -292,7 +313,6 @@ class BLAKE2b(BLAKE2):
                         ("W", c_uint64 * 8),
                        ]
         
-        # this next makes PARAMS a 'proper' instance variable
         self.PARAMS = Params64
         
         # key is passed as an argument; all other variables are 

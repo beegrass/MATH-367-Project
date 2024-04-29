@@ -1,5 +1,4 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
 def words_from_little_endian_bytes(b: bytes) -> list[int]:
     assert len(b) % 4 == 0
