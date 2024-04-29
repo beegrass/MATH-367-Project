@@ -79,12 +79,25 @@ abstract class KeccakState {
         iota(roundIndex);
     }
 
+    /**
+     * Keccak algorithm 3
+     */
     abstract void theta();
 
+    /**
+     * Keccak algorithm 4 and 5
+     */
     abstract void rhoPi();
 
+    /**
+     * Keccak algorithm 2
+     */
     abstract void chi();
 
+    /**
+     * Keccak's iota function described in Keccak Section 2.3.4
+     * @param roundIndex adds asymmetry to be resistant to slide attacks
+     */
     abstract void iota(int roundIndex);
 
     /**

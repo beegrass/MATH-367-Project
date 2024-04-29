@@ -14,6 +14,7 @@ import java.util.function.UnaryOperator;
 
 public class KeccakSponge implements UnaryOperator<byte[]> {
 
+    // set of valid values for the permutation width
     private static final Set<Short> VALID_WIDTHS;
 
     static {
@@ -56,7 +57,7 @@ public class KeccakSponge implements UnaryOperator<byte[]> {
     }
 
     /**
-     * returns the bitrate aka the max number of bits within each block
+     * returns the bitrate/the max number of bits within each block
      * absorbed into or squeezed from the permutation states
      * 
      * @return the bitrate in bits
@@ -66,7 +67,7 @@ public class KeccakSponge implements UnaryOperator<byte[]> {
     }
 
     /**
-     * returns the capacity aka the size of the portion of the permutation state
+     * returns the capacity/the size of the portion of the permutation state
      * which is not modded by the absortption of a new input block
      * 
      * @return the capacity in bits
@@ -76,7 +77,7 @@ public class KeccakSponge implements UnaryOperator<byte[]> {
     }
 
     /**
-     * returns the permutation width aka the size of the permutation state
+     * returns the permutation width/the size of the permutation state
      * Also equivalent to bitrate + capacity
      * 
      * @return the permutation width in bits

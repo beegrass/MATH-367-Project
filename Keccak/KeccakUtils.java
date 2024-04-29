@@ -11,13 +11,6 @@ public class KeccakUtils {
      * returns a hexadecimal representation of the given byte array.
      * Based on the logic of Algorithm 11: b2h(S) in NIST.FIPS.202
      * 
-     * The first hexadecimal digit pair in the returned {@code String} will
-     * represent the byte at index zero of the given array. The first
-     * hexadecimal digit in each pair represents the value of the
-     * most-significant four bits of the corresponding byte, and the second
-     * hexadecimal digit in each pair represents the value of the
-     * least-significant four bits of that same byte.
-     * 
      * @param bytes the non-null byte array
      * @return a {@code String} which contains two hex digits for every byte in the
      *         given array

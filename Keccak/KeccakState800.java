@@ -1,5 +1,6 @@
 package Keccak;
 
+// A KeccakState with permutation width of 800 bits and lane length of 32 bits.
 public class KeccakState800 extends KeccakState {
 
 	/**
