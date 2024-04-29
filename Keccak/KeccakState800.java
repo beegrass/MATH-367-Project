@@ -2,127 +2,126 @@ package Keccak;
 
 public class KeccakState800 extends KeccakState {
 
-    /**
-     * The keccak permutation state, represented by a 5x5 array of lanes.
-     * For the width 800: each lane is 32 bits in length
-     */
-    private final int[][] laneArray = new int[5][5];
+	/**
+	 * The keccak permutation state, represented by a 5x5 array of lanes.
+	 * For the width 800: each lane is 32 bits in length
+	 */
+	private final int[][] laneArray = new int[5][5];
 
-    /**
-     * The length in bits of each lane within the permutation state array
-     */
-    private static final byte LANE_LENGTH = 32;
+	/**
+	 * The length in bits of each lane within the permutation state array
+	 */
+	private static final byte LANE_LENGTH = 32;
 
-    /**
-     * Given by n = 12 + 2l where 2**l = w. This gives us 22 rounds for Keccak-F[800]
-     */
-    private static final byte NUMBER_OF_ROUNDS_PER_PERMUTATION = 22;
+	/**
+	 * Given by n = 12 + 2l where 2**l = w. This gives us 22 rounds for
+	 * Keccak-F[800]
+	 */
+	private static final byte NUMBER_OF_ROUNDS_PER_PERMUTATION = 22;
 
-    private static final int[] ROUND_CONSTANTS_FOR_WIDTH_800;
-    private static final byte[][] ROTATION_CONSTANTS_FOR_WIDTH_800;
+	private static final int[] ROUND_CONSTANTS_FOR_WIDTH_800;
+	private static final byte[][] ROTATION_CONSTANTS_FOR_WIDTH_800;
 
-    static {
-        ROUND_CONSTANTS_FOR_WIDTH_800 = new int[]{
-			1, 32898, 32906, -2147450880, 32907,
-			-2147483647, -2147450751, 32777, 138,
-			136, -2147450871, -2147483638, -2147450741,
-			139, 32905, 32771, 32770, 128, 32778,
-			-2147483638, -2147450751, 32896
+	static {
+		ROUND_CONSTANTS_FOR_WIDTH_800 = new int[] {
+				1, 32898, 32906, -2147450880, 32907,
+				-2147483647, -2147450751, 32777, 138,
+				136, -2147450871, -2147483638, -2147450741,
+				139, 32905, 32771, 32770, 128, 32778,
+				-2147483638, -2147450751, 32896
 		};
 
-        byte[][] rotOffsets = new byte[5][5];
-		rotOffsets[0] = new byte[]{
-			(byte) 0,
-			(byte) 4,
-			(byte) 3,
-			(byte) 9,
-			(byte) 18};
-		rotOffsets[1] = new byte[]{
-			(byte) 1,
-			(byte) 12,
-			(byte) 10,
-			(byte) 13,
-			(byte) 2};
-		rotOffsets[2] = new byte[]{
-			(byte) 30,
-			(byte) 6,
-			(byte) 11,
-			(byte) 15,
-			(byte) 29};
-		rotOffsets[3] = new byte[]{
-			(byte) 28,
-			(byte) 23,
-			(byte) 25,
-			(byte) 21,
-			(byte) 24};
-		rotOffsets[4] = new byte[]{
-			(byte) 27,
-			(byte) 20,
-			(byte) 7,
-			(byte) 8,
-			(byte) 14
+		byte[][] rotOffsets = new byte[5][5];
+		rotOffsets[0] = new byte[] {
+				(byte) 0,
+				(byte) 4,
+				(byte) 3,
+				(byte) 9,
+				(byte) 18 };
+		rotOffsets[1] = new byte[] {
+				(byte) 1,
+				(byte) 12,
+				(byte) 10,
+				(byte) 13,
+				(byte) 2 };
+		rotOffsets[2] = new byte[] {
+				(byte) 30,
+				(byte) 6,
+				(byte) 11,
+				(byte) 15,
+				(byte) 29 };
+		rotOffsets[3] = new byte[] {
+				(byte) 28,
+				(byte) 23,
+				(byte) 25,
+				(byte) 21,
+				(byte) 24 };
+		rotOffsets[4] = new byte[] {
+				(byte) 27,
+				(byte) 20,
+				(byte) 7,
+				(byte) 8,
+				(byte) 14
 		};
 		ROTATION_CONSTANTS_FOR_WIDTH_800 = rotOffsets;
-    }
+	}
 
-    // used by rhoPhi() method
-    private final int[][] b = new int[5][5];
+	// used by rhoPhi() method
+	private final int[][] b = new int[5][5];
 
-    // used byt theta() methiod
-    private final int[] c = new int[5]; 
-    private final int[] d = new int[5];
+	// used byt theta() methiod
+	private final int[] c = new int[5];
+	private final int[] d = new int[5];
 
-    public KeccakState800() {
-        initializeLaneArray();
-    }
+	public KeccakState800() {
+		initializeLaneArray();
+	}
 
-    private void initializeLaneArray() {
-        for(int i = 0; i < 5; ++i) {
-            for(int j = 0; j < 5; ++j) {
-                laneArray[i][j] = 0;
-            }
-        }
-    }
+	private void initializeLaneArray() {
+		for (int i = 0; i < 5; ++i) {
+			for (int j = 0; j < 5; ++j) {
+				laneArray[i][j] = 0;
+			}
+		}
+	}
 
-    @Override
-    byte getLaneLengthInBits() {
-        return LANE_LENGTH;
-    }
+	@Override
+	byte getLaneLengthInBits() {
+		return LANE_LENGTH;
+	}
 
-    @Override
-    byte getNumberOfRoundsPerPermutation() {
-        return NUMBER_OF_ROUNDS_PER_PERMUTATION;
-    }
+	@Override
+	byte getNumberOfRoundsPerPermutation() {
+		return NUMBER_OF_ROUNDS_PER_PERMUTATION;
+	}
 
-    @Override
-    void absorbEntireLaneIntoState(byte[] input, int inputBitIndex, int x, int y) {
-        assert input != null;
+	@Override
+	void absorbEntireLaneIntoState(byte[] input, int inputBitIndex, int x, int y) {
+		assert input != null;
 		assert inputBitIndex % Byte.SIZE == 0;
 		assert x >= 0 && x < 5;
 		assert x >= 0 && y < 5;
 		int laneByteCount = LANE_LENGTH / Byte.SIZE;
 		int inputByteStartIndex = inputBitIndex / Byte.SIZE;
 		int laneValue = 0;
-		for (int laneByteIndex = laneByteCount - 1; laneByteIndex >= 0;
-				--laneByteIndex) {
+		for (int laneByteIndex = laneByteCount - 1; laneByteIndex >= 0; --laneByteIndex) {
 			laneValue <<= Byte.SIZE;
 			laneValue += Byte.toUnsignedInt(input[inputByteStartIndex
 					+ laneByteIndex]);
 		}
 		laneArray[x][y] = laneArray[x][y] ^ laneValue;
-    }
+	}
 
-    @Override
-    void absorbBitByBitIntoState(byte[] input, int inputStartBitIndex, int readLengthInBits, int x, int y) {
-        assert input != null;
+	@Override
+	void absorbBitByBitIntoState(byte[] input, int inputStartBitIndex, int readLengthInBits, int x, int y) {
+		assert input != null;
 		assert inputStartBitIndex >= 0;
 		assert readLengthInBits >= 0;
 		assert x >= 0 && x < 5;
 		assert y >= 0 && y < 5;
 		int inputStopBitIndex = inputStartBitIndex + readLengthInBits;
 		int z = 0;
-		for (int inputBitIndex = inputStartBitIndex; inputBitIndex
-				< inputStopBitIndex; ++inputBitIndex) {
+		for (int inputBitIndex = inputStartBitIndex; inputBitIndex < inputStopBitIndex; ++inputBitIndex) {
 			assert y < 5;
 			if (isInputBitHigh(input, inputBitIndex)) {
 				laneArray[x][y] = laneArray[x][y] ^ (1 << z);
@@ -136,47 +135,47 @@ public class KeccakState800 extends KeccakState {
 				x = 0;
 			}
 		}
-    }
+	}
 
-    @Override
-    void applyComplementingPattern() {
-        laneArray[1][0] = ~laneArray[1][0];
+	@Override
+	void applyComplementingPattern() {
+		laneArray[1][0] = ~laneArray[1][0];
 		laneArray[2][0] = ~laneArray[2][0];
 		laneArray[3][1] = ~laneArray[3][1];
 		laneArray[2][2] = ~laneArray[2][2];
 		laneArray[2][3] = ~laneArray[2][3];
 		laneArray[0][4] = ~laneArray[0][4];
-    }
+	}
 
-    @Override
-    void theta() {
-        thetaC();
+	@Override
+	void theta() {
+		thetaC();
 		thetaD();
 		for (int y = 0; y < 5; ++y) {
 			for (int x = 0; x < 5; ++x) {
 				laneArray[x][y] = laneArray[x][y] ^ d[x];
 			}
 		}
-    }
+	}
 
-    private void thetaC() {
-        for (int x = 0; x < 5; ++x) {
+	private void thetaC() {
+		for (int x = 0; x < 5; ++x) {
 			c[x] = laneArray[x][0] ^ laneArray[x][1] ^ laneArray[x][2]
 					^ laneArray[x][3] ^ laneArray[x][4];
 		}
-    }
+	}
 
-    private void thetaD() {
-        d[0] = c[4] ^ Integer.rotateLeft(c[1], 1);
+	private void thetaD() {
+		d[0] = c[4] ^ Integer.rotateLeft(c[1], 1);
 		d[1] = c[0] ^ Integer.rotateLeft(c[2], 1);
 		d[2] = c[1] ^ Integer.rotateLeft(c[3], 1);
 		d[3] = c[2] ^ Integer.rotateLeft(c[4], 1);
 		d[4] = c[3] ^ Integer.rotateLeft(c[0], 1);
-    }
+	}
 
-    @Override
-    void rhoPi() {
-        b[0][0] = Integer.rotateLeft(laneArray[0][0],
+	@Override
+	void rhoPi() {
+		b[0][0] = Integer.rotateLeft(laneArray[0][0],
 				ROTATION_CONSTANTS_FOR_WIDTH_800[0][0]);
 		b[1][3] = Integer.rotateLeft(laneArray[0][1],
 				ROTATION_CONSTANTS_FOR_WIDTH_800[0][1]);
@@ -230,29 +229,29 @@ public class KeccakState800 extends KeccakState {
 				ROTATION_CONSTANTS_FOR_WIDTH_800[4][3]);
 		b[4][0] = Integer.rotateLeft(laneArray[4][4],
 				ROTATION_CONSTANTS_FOR_WIDTH_800[4][4]);
-    }
+	}
 
-    @Override
-    void chi() {
-        for (int y = 0; y < 5; ++y) {
+	@Override
+	void chi() {
+		for (int y = 0; y < 5; ++y) {
 			laneArray[0][y] = b[0][y] ^ (~b[1][y] & b[2][y]);
 			laneArray[1][y] = b[1][y] ^ (~b[2][y] & b[3][y]);
 			laneArray[2][y] = b[2][y] ^ (~b[3][y] & b[4][y]);
 			laneArray[3][y] = b[3][y] ^ (~b[4][y] & b[0][y]);
 			laneArray[4][y] = b[4][y] ^ (~b[0][y] & b[1][y]);
 		}
-    }
+	}
 
-    @Override
-    void iota(int roundIndex) {
-        assert roundIndex >= 0 && roundIndex < NUMBER_OF_ROUNDS_PER_PERMUTATION;
+	@Override
+	void iota(int roundIndex) {
+		assert roundIndex >= 0 && roundIndex < NUMBER_OF_ROUNDS_PER_PERMUTATION;
 		laneArray[0][0] = laneArray[0][0]
 				^ ROUND_CONSTANTS_FOR_WIDTH_800[roundIndex];
-    }
+	}
 
-    @Override
-    void squeezeEntireLaneIntoOutput(int x, int y, byte[] output, int outputBitIndex) {
-        assert x >= 0 && x < 5;
+	@Override
+	void squeezeEntireLaneIntoOutput(int x, int y, byte[] output, int outputBitIndex) {
+		assert x >= 0 && x < 5;
 		assert y >= 0 && y < 5;
 		assert output != null;
 		assert outputBitIndex >= 0;
@@ -260,18 +259,16 @@ public class KeccakState800 extends KeccakState {
 		int laneByteCount = LANE_LENGTH / Byte.SIZE;
 		int finalLaneByteIndex = laneByteCount - 1;
 		int outputByteIndex = outputBitIndex / Byte.SIZE;
-		for (int laneByteIndex = finalLaneByteIndex; laneByteIndex >= 0;
-				--laneByteIndex) {
+		for (int laneByteIndex = finalLaneByteIndex; laneByteIndex >= 0; --laneByteIndex) {
 			byte laneChunk = (byte) (laneValue & 0xff);
-			output[outputByteIndex + (finalLaneByteIndex - laneByteIndex)]
-					= laneChunk;
+			output[outputByteIndex + (finalLaneByteIndex - laneByteIndex)] = laneChunk;
 			laneValue >>= Byte.SIZE;
 		}
-    }
+	}
 
-    @Override
-    int squeezeLaneBitByBitIntoOutput(byte[] output, int outputBitIndex, int outputStopIndex, int x, int y) {
-        assert output != null;
+	@Override
+	int squeezeLaneBitByBitIntoOutput(byte[] output, int outputBitIndex, int outputStopIndex, int x, int y) {
+		assert output != null;
 		assert outputBitIndex >= 0;
 		assert x >= 0 && x < 5;
 		assert y >= 0 && y < 5;
@@ -286,7 +283,6 @@ public class KeccakState800 extends KeccakState {
 			++outputBitIndex;
 		}
 		return outputBitIndex;
-    }
-    
-    
+	}
+
 }

@@ -3,16 +3,16 @@ package Skein;
 import Keccak.KeccakUtils;
 
 public class SkeinMain {
-    
-     /**
+
+    /**
      * Benchmarks an instance of the Skein hash function.
      *
-     * @param iterations 
-     *     Number of hash computations to perform.
+     * @param iterations
+     *                   Number of hash computations to perform.
      * @param skein
-     *     Resulting speed in megabytes per second.
+     *                   Resulting speed in megabytes per second.
      * @param warmup
-     *     If set then don't print results, just warmup JIT compiler
+     *                   If set then don't print results, just warmup JIT compiler
      * @return
      */
     public double Benchmark(long iterations, Skein skein) {
@@ -26,11 +26,9 @@ public class SkeinMain {
 
         System.out.println("Skien hash digest: ");
         System.out.println(KeccakUtils.hexFromBytes(hash));
-        
+
         return 0.0;
     }
-
-    
 
     public static void main(String args[]) {
 

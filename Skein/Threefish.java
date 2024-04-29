@@ -125,42 +125,44 @@ public class Threefish {
 	}
 
 	/**
-     * Encrypt function
-     * 
-     * Derived classes must implement this function.
-     * 
-     * @param input
-     *     The plaintext input.
-     * @param output
-     *     The ciphertext output.
-     */
-    public void encrypt(long[] input, long[] output) {}
+	 * Encrypt function
+	 * 
+	 * Derived classes must implement this function.
+	 * 
+	 * @param input
+	 *               The plaintext input.
+	 * @param output
+	 *               The ciphertext output.
+	 */
+	public void encrypt(long[] input, long[] output) {
+	}
 
-    /**
-     * Decrypt function
-     * 
-     * Derived classes must implement this function.
-     * 
-     * @param input
-     *     The ciphertext input.
-     * @param output
-     *     The plaintext output.
-     */
-    public void decrypt(long[] input, long[] output) {}
+	/**
+	 * Decrypt function
+	 * 
+	 * Derived classes must implement this function.
+	 * 
+	 * @param input
+	 *               The ciphertext input.
+	 * @param output
+	 *               The plaintext output.
+	 */
+	public void decrypt(long[] input, long[] output) {
+	}
 
 	public class Threefish512 extends Threefish {
 		private final int CIPHER_SIZE = 512;
 		private final int CIPHER_QWORDS = CIPHER_SIZE / 64;
 		private final int EXPANDED_KEY_SIZE = CIPHER_QWORDS + 1;
-	
+
 		public Threefish512() {
-	
+
 			expanedKey = new long[EXPANDED_KEY_SIZE];
 			expanedKey[EXPANDED_KEY_SIZE - 1] = KEY_SCHEDULE_CONST;
 		}
-	
+
 		public void encrypt(long[] input, long[] output) {
-	
+
 			long b0 = input[0], b1 = input[1],
 					b2 = input[2], b3 = input[3],
 					b4 = input[4], b5 = input[5],
@@ -172,7 +174,7 @@ public class Threefish {
 					k8 = expanedKey[8];
 			long t0 = expanedTweak[0], t1 = expanedTweak[1],
 					t2 = expanedTweak[2];
-	
+
 			b1 += k1;
 			b0 += b1 + k0;
 			b1 = ((b1 << 46) | (b1 >>> (64 - 46))) ^ b0;
@@ -821,7 +823,7 @@ public class Threefish {
 			b5 = ((b5 << 56) | (b5 >>> (64 - 56))) ^ b2;
 			b4 += b3;
 			b3 = ((b3 << 22) | (b3 >>> (64 - 22))) ^ b4;
-	
+
 			output[0] = b0 + k0;
 			output[1] = b1 + k1;
 			output[2] = b2 + k2;
@@ -831,9 +833,9 @@ public class Threefish {
 			output[6] = b6 + k6 + t1;
 			output[7] = b7 + k7 + 18;
 		}
-	
+
 		public void decrypt(long[] input, long[] output) {
-	
+
 			long b0 = input[0], b1 = input[1],
 					b2 = input[2], b3 = input[3],
 					b4 = input[4], b5 = input[5],
@@ -846,7 +848,7 @@ public class Threefish {
 			long t0 = expanedTweak[0], t1 = expanedTweak[1],
 					t2 = expanedTweak[2];
 			long tmp;
-	
+
 			b0 -= k0;
 			b1 -= k1;
 			b2 -= k2;
@@ -1791,7 +1793,7 @@ public class Threefish {
 			b1 = (tmp >>> 46) | (tmp << (64 - 46));
 			b0 -= b1 + k0;
 			b1 -= k1;
-	
+
 			output[7] = b7;
 			output[6] = b6;
 			output[5] = b5;
@@ -1802,7 +1804,5 @@ public class Threefish {
 			output[0] = b0;
 		}
 	}
-
-
 
 }

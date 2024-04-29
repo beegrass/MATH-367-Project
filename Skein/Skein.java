@@ -44,11 +44,13 @@ public class Skein {
      * Initializes the Skein hash instance.
      *
      * @param stateSize
-     *     The internal state size of the hash in bits. Supported values 
-     *     are 256, 512, and 1024
+     *                   The internal state size of the hash in bits. Supported
+     *                   values
+     *                   are 256, 512, and 1024
      * @param outputSize
-     *     The output size of the hash in bits. Output size must greater 
-     *     than zero.
+     *                   The output size of the hash in bits. Output size must
+     *                   greater
+     *                   than zero.
      * @throws IllegalArgumentException
      */
 
@@ -68,15 +70,17 @@ public class Skein {
      * Initializes the Skein hash instance for use with a key (Skein MAC)
      * 
      * @param stateSize
-     *     The internal state size of the hash in bits. Supported values 
-     *     are 256, 512, and 1024
+     *                   The internal state size of the hash in bits. Supported
+     *                   values
+     *                   are 256, 512, and 1024
      * @param outputSize
-     *     The output size of the hash in bits. Output size must greater 
-     *     than zero.
+     *                   The output size of the hash in bits. Output size must
+     *                   greater
+     *                   than zero.
      * @param treeInfo
-     *     Not yet supported.
+     *                   Not yet supported.
      * @param key
-     *     The key for a message authenication code (MAC)
+     *                   The key for a message authenication code (MAC)
      * @throws IllegalArgumentException
      */
     public Skein(int stateSize, int outputSize, long treeInfo, byte[] key)
@@ -142,7 +146,7 @@ public class Skein {
 
     /*
      * Process (encrypt) one block with Threefish and update internal
-     * context variables. 
+     * context variables.
      */
     void ProcessBlock(int bytes) {
         // Set the key to the current state
@@ -168,18 +172,19 @@ public class Skein {
      * arbitrary length (up to its maximum design size).
      * 
      * @param array
-     *     The byte array that holds the bit string. The array must be big
-     *     enough to hold all bits.
+     *               The byte array that holds the bit string. The array must be big
+     *               enough to hold all bits.
      * @param start
-     *     Offset into byte array where the data starts, must be a byte number
-     *     (not a bit number).
+     *               Offset into byte array where the data starts, must be a byte
+     *               number
+     *               (not a bit number).
      * @param length
-     *     Number of bits to hash.
+     *               Number of bits to hash.
      */
-    public void updateBits(byte[] array, int start, int length) 
-        throws IllegalStateException {
-        
-        if (ubiParameters.isBitPad())         {
+    public void updateBits(byte[] array, int start, int length)
+            throws IllegalStateException {
+
+        if (ubiParameters.isBitPad()) {
             throw new IllegalStateException("Skein: partial byte only on last data block");
         }
         // if number of bits is a multiple of bytes - that's easy
@@ -188,11 +193,11 @@ public class Skein {
             return;
         }
         // Fill in bytes in buffer, add one for partial byte
-        update(array, start, (length>>>3)+1);
+        update(array, start, (length >>> 3) + 1);
 
         // Mask partial byte and set BitPad flag before doFinal()
-        byte mask = (byte)(1 << (7 - (length & 7)));        // partial byte bit mask
-        inputBuffer[bytesFilled-1] = (byte)((inputBuffer[bytesFilled-1] & (0-mask)) | mask);
+        byte mask = (byte) (1 << (7 - (length & 7))); // partial byte bit mask
+        inputBuffer[bytesFilled - 1] = (byte) ((inputBuffer[bytesFilled - 1] & (0 - mask)) | mask);
         ubiParameters.setBitPad(true);
     }
 
@@ -310,27 +315,27 @@ public class Skein {
      */
     private void initialize(int initializationType) {
         switch (initializationType) {
-        case NORMAL:
-            // Normal initialization
-            initialize();
-            return;
+            case NORMAL:
+                // Normal initialization
+                initialize();
+                return;
 
-        case ZEROED_STATE:
-            // Start with a all zero state
-            for (int i = 0; i < state.length; i++)
-                state[i] = 0;
-            break;
+            case ZEROED_STATE:
+                // Start with a all zero state
+                for (int i = 0; i < state.length; i++)
+                    state[i] = 0;
+                break;
 
-        case CHAINED_STATE:
-            // Keep the state as it is and do nothing
-            break;
+            case CHAINED_STATE:
+                // Keep the state as it is and do nothing
+                break;
 
-        case CHAINED_CONFIG:
-            // Generate a chained configuration
-            configuration.generateConfiguration(state);
-            // Continue initialization
-            initialize();
-            return;
+            case CHAINED_CONFIG:
+                // Generate a chained configuration
+                configuration.generateConfiguration(state);
+                // Continue initialization
+                initialize();
+                return;
         }
 
         // Reset bytes filled
@@ -366,7 +371,7 @@ public class Skein {
      * a given state size, key, and output size combination.
      * 
      * @param externalState
-     *     The state to use.
+     *                      The state to use.
      */
     public final void initialize(long[] externalState) {
         // Copy an external saved state value to internal state
@@ -397,6 +402,7 @@ public class Skein {
 
     /**
      * The output hash size in bits of this Skein instance
+     * 
      * @return the hashSize int bits
      */
     public int getHashSize() {
@@ -429,7 +435,7 @@ public class Skein {
     public int getByteLength() {
         return cipherStateBytes;
     }
-    
+
     /**
      * Get the current internal state of this Skein instance.
      * 
@@ -437,7 +443,7 @@ public class Skein {
      * key or state-chaining processing, and reuse this state.
      * 
      * @return
-     *     The current internal state.
+     *         The current internal state.
      *
      * @see initialize(long[] externalState)
      */
@@ -448,17 +454,16 @@ public class Skein {
             s[i] = state[i];
         return s;
     }
-    
+
     class SkeinConfig {
         private final int stateSize;
 
         long[] ConfigValue;
 
         // Set the state size for the configuration
-        long [] ConfigString;
+        long[] ConfigString;
 
-        SkeinConfig(Skein sourceHash)
-        {
+        SkeinConfig(Skein sourceHash) {
             stateSize = sourceHash.getcipherStateBits();
 
             // Allocate config value
@@ -469,8 +474,7 @@ public class Skein {
             ConfigString[1] = sourceHash.getHashSize();
         }
 
-        void generateConfiguration()
-        {
+        void generateConfiguration() {
             Threefish cipher = Threefish.createCipher(stateSize);
             UbiTweak tweak = new UbiTweak();
 
@@ -482,13 +486,12 @@ public class Skein {
             cipher.setTweak(tweak.getTweak());
             cipher.encrypt(ConfigString, ConfigValue);
 
-            ConfigValue[0] ^= ConfigString[0]; 
+            ConfigValue[0] ^= ConfigString[0];
             ConfigValue[1] ^= ConfigString[1];
             ConfigValue[2] ^= ConfigString[2];
         }
 
-        void generateConfiguration(long[] initialState)
-        {
+        void generateConfiguration(long[] initialState) {
             Threefish cipher = Threefish.createCipher(stateSize);
             UbiTweak tweak = new UbiTweak();
 
@@ -506,9 +509,8 @@ public class Skein {
             ConfigValue[2] ^= ConfigString[2];
         }
 
-        void setSchema(byte[] schema) throws IllegalArgumentException
-        {
-            if (schema.length != 4) 
+        void setSchema(byte[] schema) throws IllegalArgumentException {
+            if (schema.length != 4)
                 throw new IllegalArgumentException("Skein configuration: Schema must be 4 bytes.");
 
             long n = ConfigString[0];
@@ -524,34 +526,30 @@ public class Skein {
             ConfigString[0] = n;
         }
 
-        void setVersion(int version) throws IllegalArgumentException
-        {
+        void setVersion(int version) throws IllegalArgumentException {
             if (version < 0 || version > 3)
                 throw new IllegalArgumentException("Skein configuration: Version must be between 0 and 3, inclusive.");
 
-            ConfigString[0] &= ~((long)0x03 << 32);
-            ConfigString[0] |= (long)version << 32;
+            ConfigString[0] &= ~((long) 0x03 << 32);
+            ConfigString[0] |= (long) version << 32;
         }
 
-        void setTreeLeafSize(byte size)
-        {
-            ConfigString[2] &= ~(long)0xff;
+        void setTreeLeafSize(byte size) {
+            ConfigString[2] &= ~(long) 0xff;
             ConfigString[2] |= size;
         }
 
-        void setTreeFanOutSize(byte size)
-        {
-            ConfigString[2] &= ~((long)0xff << 8);
-            ConfigString[2] |= (long)size << 8;
+        void setTreeFanOutSize(byte size) {
+            ConfigString[2] &= ~((long) 0xff << 8);
+            ConfigString[2] |= (long) size << 8;
         }
 
-        void setMaxTreeHeight(byte height) throws IllegalArgumentException
-        {
+        void setMaxTreeHeight(byte height) throws IllegalArgumentException {
             if (height == 1)
                 throw new IllegalArgumentException("Skein configuration: Tree height must be zero or greater than 1.");
 
-            ConfigString[2] &= ~((long)0xff << 16);
-            ConfigString[2] |= (long)height << 16;
+            ConfigString[2] &= ~((long) 0xff << 16);
+            ConfigString[2] |= (long) height << 16;
         }
     }
 
@@ -622,9 +620,9 @@ public class Skein {
             else
                 tweak[1] &= ~T1FlagBitPad;
         }
-        
+
         /**
-         * Gets  the current tree level.
+         * Gets the current tree level.
          */
         byte getTreeLevel() {
             return (byte) ((tweak[1] >> 48) & 0x7f);
@@ -634,7 +632,7 @@ public class Skein {
          * Set the current tree level.
          * 
          * @param value
-         *          the tree level
+         *              the tree level
          */
         void setTreeLevel(int value) throws Exception {
             if (value > 63)
@@ -649,7 +647,7 @@ public class Skein {
          * Gets the number of bytes processed so far, inclusive.
          * 
          * @return
-         *      Number of processed bytes.
+         *         Number of processed bytes.
          */
         long[] getBitsProcessed() {
             long[] retval = new long[2];
@@ -662,7 +660,7 @@ public class Skein {
          * Set the number of bytes processed so far.
          * 
          * @param value
-         *        The number of bits to set.
+         *              The number of bits to set.
          */
         void setBitsProcessed(long value) {
             tweak[0] = value;
@@ -674,14 +672,14 @@ public class Skein {
          * 
          * Adds the integere value to the 96-bit field of processed
          * bytes.
-         *  
+         * 
          * @param value
-         *        Number of processed bytes.
+         *              Number of processed bytes.
          */
         void addBytesProcessed(int value) {
             final int len = 3;
             long carry = value;
-            
+
             long words[] = new long[len];
             words[0] = tweak[0] & 0xffffffffL;
             words[1] = ((tweak[0] >>> 32) & 0xffffffffL);
@@ -691,7 +689,7 @@ public class Skein {
                 carry += words[i];
                 words[i] = carry;
                 carry >>= 32;
-            }        
+            }
             tweak[0] = words[0] & 0xffffffffL;
             tweak[0] |= (words[1] & 0xffffffffL) << 32;
             tweak[1] |= words[2] & 0xffffffffL;
@@ -708,7 +706,7 @@ public class Skein {
          * Set the current UBI block type.
          * 
          * @param value
-         *        Block type 
+         *              Block type
          */
         void setBlockType(long value) {
             tweak[1] = value << 56;
@@ -719,7 +717,7 @@ public class Skein {
          * the first flag, and setting the block type.
          *
          * @param type
-         *     The UBI block type of the new block
+         *             The UBI block type of the new block
          */
         void startNewBlockType(long type) {
             setBitsProcessed(0);
@@ -736,7 +734,7 @@ public class Skein {
 
         /**
          * @param tweak
-         *            the tweak to set
+         *              the tweak to set
          */
         void setTweak(long[] tweak) {
             this.tweak = tweak;

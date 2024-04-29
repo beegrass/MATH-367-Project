@@ -6,47 +6,48 @@ import java.util.Objects;
  * utility and helper functions used in Keccak Sponge and State
  */
 public class KeccakUtils {
-    
+
     /**
      * returns a hexadecimal representation of the given byte array.
      * Based on the logic of Algorithm 11: b2h(S) in NIST.FIPS.202
      * 
      * The first hexadecimal digit pair in the returned {@code String} will
-	 * represent the byte at index zero of the given array. The first
-	 * hexadecimal digit in each pair represents the value of the
-	 * most-significant four bits of the corresponding byte, and the second
-	 * hexadecimal digit in each pair represents the value of the
-	 * least-significant four bits of that same byte.
+     * represent the byte at index zero of the given array. The first
+     * hexadecimal digit in each pair represents the value of the
+     * most-significant four bits of the corresponding byte, and the second
+     * hexadecimal digit in each pair represents the value of the
+     * least-significant four bits of that same byte.
      * 
      * @param bytes the non-null byte array
-     * @return a {@code String} which contains two hex digits for every byte in the given array
+     * @return a {@code String} which contains two hex digits for every byte in the
+     *         given array
      */
     public static String hexFromBytes(byte[] bytes) {
-		Objects.requireNonNull(bytes, "Parameter `bytes` cannot be null.");
-		StringBuilder hexString = new StringBuilder(bytes.length * 2);
-		for (byte b : bytes) {
-			appendByteAsHexPair(b, hexString);
-		}
-		return hexString.toString();
-	}
+        Objects.requireNonNull(bytes, "Parameter `bytes` cannot be null.");
+        StringBuilder hexString = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            appendByteAsHexPair(b, hexString);
+        }
+        return hexString.toString();
+    }
 
     private static void appendByteAsHexPair(byte b, StringBuilder sb) {
-		assert sb != null;
-		byte leastSignificantHalf = (byte) (b & 0x0f);
-		byte mostSignificantHalf = (byte) ((b >> 4) & 0x0f);
-		sb.append(getHexDigitWithValue(mostSignificantHalf));
-		sb.append(getHexDigitWithValue(leastSignificantHalf));
-	}
+        assert sb != null;
+        byte leastSignificantHalf = (byte) (b & 0x0f);
+        byte mostSignificantHalf = (byte) ((b >> 4) & 0x0f);
+        sb.append(getHexDigitWithValue(mostSignificantHalf));
+        sb.append(getHexDigitWithValue(leastSignificantHalf));
+    }
 
-	private static char getHexDigitWithValue(byte value) {
-		assert value >= 0 && value <= 16;
-		if (value < 10) {
-			return (char) ('0' + value);
-		}
-		return (char) ('A' + value - 10);
-	}
+    private static char getHexDigitWithValue(byte value) {
+        assert value >= 0 && value <= 16;
+        if (value < 10) {
+            return (char) ('0' + value);
+        }
+        return (char) ('A' + value - 10);
+    }
 
-	public static byte[] createSufficientlyLargeByteArray(int bitCount) {
+    public static byte[] createSufficientlyLargeByteArray(int bitCount) {
         assert bitCount > 0;
         int bytesRequired = divideThenRoundUp(bitCount, Byte.SIZE);
         return new byte[bytesRequired];
@@ -64,8 +65,8 @@ public class KeccakUtils {
             return 1 + dividend / divisor;
         }
     }
-	
-	public static void validateBitrate(int bitrate) {
+
+    public static void validateBitrate(int bitrate) {
         if (bitrate < 1) {
             throw new IllegalArgumentException(
                     "bitrate must be greater than zero.");
@@ -80,7 +81,7 @@ public class KeccakUtils {
         }
     }
 
-	public static void validateSuffixBits(String suffixBits) {
+    public static void validateSuffixBits(String suffixBits) {
         Objects.requireNonNull(suffixBits);
         int length = suffixBits.length();
         for (int index = 0; index < length; ++index) {
@@ -93,7 +94,7 @@ public class KeccakUtils {
         }
     }
 
-	public static void validateCapacity(int capacity) {
+    public static void validateCapacity(int capacity) {
         if (capacity < 1) {
             throw new IllegalArgumentException(
                     "capacity must be greater than zero.");
@@ -111,7 +112,7 @@ public class KeccakUtils {
         }
     }
 
-	public static void validateMessageLength(byte[] message,
+    public static void validateMessageLength(byte[] message,
             int messageLengthInBits) {
         if (messageLengthInBits < 0) {
             throw new IllegalArgumentException(

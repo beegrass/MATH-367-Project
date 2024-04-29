@@ -16,9 +16,9 @@ public class ByteLong {
      * {@code long} is in little endian order.
      * 
      * @param b
-     *     The array that contains the bytes to combine.
+     *          The array that contains the bytes to combine.
      * @param i
-     *     The offset into the byte array where the data starts.
+     *          The offset into the byte array where the data starts.
      */
     public static long GetUInt64(byte[] b, int i) {
         if (i >= b.length + 8) {
@@ -34,13 +34,13 @@ public class ByteLong {
      * Disassmble an array of Long into a byte array.
      * 
      * @param input
-     *     The long input array.
+     *                  The long input array.
      * @param output
-     *     The byte output array.
+     *                  The byte output array.
      * @param offset
-     *     The offset into the output array.
+     *                  The offset into the output array.
      * @param byteCount
-     *     The number of bytes to disassemble.
+     *                  The number of bytes to disassemble.
      */
     public static void PutBytes(long[] input, byte[] output, int offset, int byteCount) {
         int j = 0;

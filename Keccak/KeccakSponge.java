@@ -93,6 +93,7 @@ public class KeccakSponge implements UnaryOperator<byte[]> {
      * returns the number of rounds within every permutation that should
      * be applied for a keccak sponge with the specified lane length
      * is 22 for laneLegnth of 32
+     * 
      * @return
      */
     public int getNumberOfRoundsPerPermutation() {
