@@ -1,6 +1,6 @@
 # New Hash Generation Algorithms
 
-For MATH-367: Codes and Ciphers. This project repository is a personal collection of multiple hash algorithms including: Streebog (aka GOST R 34.11-2012), Blake2, Blake3, Skein, and Keccak. They are implemented in Java and Python. All documentation is my own and is based on the official hashes' specifications.
+For MATH-367: Codes and Ciphers. This project repository is a personal collection of multiple hash algorithms including: Streebog (aka GOST R 34.11-2012), Blake2, Blake3, Skein, and Keccak. They are implemented in Java and Python. Most documentation is my own and is based on the official hashes' specifications.
 
 
 ## Streebog (GOST R 34.11-2012)

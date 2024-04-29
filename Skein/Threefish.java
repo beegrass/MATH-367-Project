@@ -124,31 +124,9 @@ public class Threefish {
 		return stateSize / 8;
 	}
 
-	/**
-	 * Encrypt function
-	 * 
-	 * Derived classes must implement this function.
-	 * 
-	 * @param input
-	 *               The plaintext input.
-	 * @param output
-	 *               The ciphertext output.
-	 */
-	public void encrypt(long[] input, long[] output) {
-	}
+	public void encrypt(long[] input, long[] output) {}
 
-	/**
-	 * Decrypt function
-	 * 
-	 * Derived classes must implement this function.
-	 * 
-	 * @param input
-	 *               The ciphertext input.
-	 * @param output
-	 *               The plaintext output.
-	 */
-	public void decrypt(long[] input, long[] output) {
-	}
+	public void decrypt(long[] input, long[] output) {}
 
 	public class Threefish512 extends Threefish {
 		private final int CIPHER_SIZE = 512;

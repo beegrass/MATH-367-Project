@@ -417,6 +417,10 @@ public class Skein {
         return outputBytes;
     }
 
+    /**
+     * Update the hash with new input
+     * @param in byte
+     */
     public void update(byte in) {
         byte[] tmp = new byte[] { in };
         update(tmp, 0, 1);
@@ -428,6 +432,9 @@ public class Skein {
         return hash.length;
     }
 
+    /**
+     * Clear the internal state of the hash
+     */
     public void reset() {
         initialize();
     }
@@ -726,7 +733,7 @@ public class Skein {
         }
 
         /**
-         * @return the tweak
+         * @return the tweak value
          */
         long[] getTweak() {
             return tweak;
