@@ -39,7 +39,7 @@ public class SkeinMain {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Skein benchmark done.");
+        System.out.println("Skein done.");
     }
 
 }
